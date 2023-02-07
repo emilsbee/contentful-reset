@@ -4,6 +4,8 @@ import * as contentful from 'contentful-management';
 
 const accessToken = process.env.ACCESS_TOKEN;
 const spaceId = process.env.SPACE_ID;
+const masterEnvironmentId = 'master';
+const developEnvironmentId = 'develop';
 
 const masterClient = contentful.createClient({
   accessToken,
@@ -11,7 +13,7 @@ const masterClient = contentful.createClient({
   type: 'plain',
   defaults: {
     spaceId,
-    environmentId: 'master',
+    environmentId: masterEnvironmentId,
   },
 });
 
@@ -21,9 +23,22 @@ const developClient = contentful.createClient({
   type: 'plain',
   defaults: {
     spaceId,
-    environmentId: 'develop',
+    environmentId: developEnvironmentId,
   },
 });
+
+const developExists = async (client: contentful.PlainClientAPI): Promise<boolean> => {
+  try {
+    await client.environment.get({
+      spaceId,
+      environmentId: developEnvironmentId,
+    });
+  
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 const deleteEverything = async (client: contentful.PlainClientAPI) => {
   const entries = await client.entry.getMany({});
@@ -51,7 +66,12 @@ const deleteEverything = async (client: contentful.PlainClientAPI) => {
 
 const main = async () => {
   await deleteEverything(masterClient);
-  await deleteEverything(developClient);
+
+  const isDevelop = await developExists(masterClient);
+
+  if (isDevelop) {
+    await developClient.environment.delete({ spaceId, environmentId: developEnvironmentId });
+  }
 };
 
 main();
