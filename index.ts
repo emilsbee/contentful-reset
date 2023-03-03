@@ -85,6 +85,27 @@ const deleteEverything = async (client: contentful.PlainClientAPI) => {
       });
     }
   }
+
+  // Delete preview environments
+  const previewEnvironmentRes = await fetch(`https://api.contentful.com/spaces/${spaceId}/preview_environments`, {
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/vnd.contentful.management.v1+json'
+    }
+  });
+
+  const previewEnvironments = await previewEnvironmentRes.json();
+
+  for (const previewEnvironment of previewEnvironments.items) {
+    const previewEnvironmentId = previewEnvironment.sys.id;
+
+    await fetch(`https://api.contentful.com/spaces/${spaceId}/preview_environments/${previewEnvironmentId}`, {
+      method: 'DELETE',
+      headers: {
+        'authorization': `Bearer ${accessToken}`,
+      }
+    })
+  }
 };
 
 const main = async () => {
