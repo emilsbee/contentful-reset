@@ -5,6 +5,7 @@ import * as contentful from 'contentful-management';
 const accessToken = process.env.MANAGEMENT_TOKEN;
 const spaceId = process.env.SPACE_ID;
 const masterEnvironmentId = 'master';
+const acceptanceEnvironmentId = 'acceptance';
 const developEnvironmentId = 'develop';
 
 const masterClient = contentful.createClient({
@@ -14,6 +15,16 @@ const masterClient = contentful.createClient({
   defaults: {
     spaceId,
     environmentId: masterEnvironmentId,
+  },
+});
+
+const acceptanceClient = contentful.createClient({
+  accessToken,
+}, {
+  type: 'plain',
+  defaults: {
+    spaceId,
+    environmentId: acceptanceEnvironmentId,
   },
 });
 
@@ -30,11 +41,11 @@ const developClient = contentful.createClient({
 /**
  * Checks whether an environment with id "develop" exists in Contentful.
  */
-const developExists = async (client: contentful.PlainClientAPI): Promise<boolean> => {
+const environmentExists = async (client: contentful.PlainClientAPI, environmentId: string): Promise<boolean> => {
   try {
     await client.environment.get({
       spaceId,
-      environmentId: developEnvironmentId,
+      environmentId,
     });
   
     return true;
@@ -111,10 +122,15 @@ const deleteEverything = async (client: contentful.PlainClientAPI) => {
 const main = async () => {
   await deleteEverything(masterClient);
 
-  const isDevelop = await developExists(masterClient);
+  const isDevelop = await environmentExists(masterClient, 'develop');
+  const isAcceptance = await environmentExists(masterClient, 'acceptance');
 
   if (isDevelop) {
     await developClient.environment.delete({ spaceId, environmentId: developEnvironmentId });
+  }
+
+  if (isAcceptance) {
+    await acceptanceClient.environment.delete({ spaceId, environmentId: acceptanceEnvironmentId });
   }
 };
 
