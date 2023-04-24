@@ -1,12 +1,20 @@
 import * as dotenv from 'dotenv'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config();
 import * as contentful from 'contentful-management';
+import commandLineArgs, { OptionDefinition } from 'command-line-args';
 
 const accessToken = process.env.MANAGEMENT_TOKEN;
 const spaceId = process.env.SPACE_ID;
 const masterEnvironmentId = 'master';
 const acceptanceEnvironmentId = 'acceptance';
 const developEnvironmentId = 'develop';
+
+const optionDefinitions: OptionDefinition[] = [
+  { name: 'managementToken', alias: 'm', type: String },
+  { name: 'spaceId', alias: 's', type: String },
+];
+
+const options = commandLineArgs(optionDefinitions);
 
 const masterClient = contentful.createClient({
   accessToken,
@@ -134,4 +142,4 @@ const main = async () => {
   }
 };
 
-main();
+// main();
