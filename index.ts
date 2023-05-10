@@ -40,8 +40,6 @@ const deleteEverything = async (client: contentful.PlainClientAPI, accessToken: 
   // Delete non master environments (thereby deleting entries, assets, content types and apps)
   const environments = await client.environment.getMany({});
   for (const environment of environments.items) {
-    console.log(environment.sys);
-    
     // Only delete the environment if it's not master and not aliased because in both cases
     // it would throw.
     if (environment.sys.id !== 'master' && (!environment.sys.aliases?.length || environment.sys.aliases?.length === 0)) {
